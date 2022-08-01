@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SNAKE GAME</title>
+    <link rel="stylesheet" href="style.css">
+    <meta charset="utf-8">
+    <style>
+      #wrapper{
+        width: 100%;
+        margin: auto;
+        height: 100%;
+      }
+      #header{
+        width: 100%;
+        height: 150px;
+      }
+      #left{
+        width: 20%;
+        height: 350px;
+        float: left;
+      }
+      #content{
+        width: 50%;
+        height: 600px;
+        float: left;
+      }
+      #right{
+        width: 30%;
+        height: 450px;
+        float: left;
+      }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.2.0/chart.min.js" ></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  </head>
+
+  <body>
+    <div id="wrapper">
+        <div>
+          <form action="" id="form">
+            <input type="hidden" name="score_1" id="score_1" value=1 />
+            <input type="hidden" name="score_2" id="score_2" value=1 />
+            <input type="hidden" name="winner1" id="winner1" value=1 />
+            <input type="hidden" name="winner2" id="winner2" value=1 />
+          </form>
+        </div>
+        <div id="header">
+            <img src="snakeicon.png" width="10%" height="100%" alt="">
+            &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+            <img src="snake.png" width="50%" height="100%" alt="">
+        </div>
+        <div id="left">
+            <br>
+            <form>
+                <h2>&emsp;Player 1</h2>
+                <h2>&emsp;Color: <b class="a">BLUE</b></h2>
+                <h2>&emsp;Player 2</h2>
+                <h2>&emsp;Color: <b class="b">YELLOW</b></h2>
+            </form>
+        </div>
+        <div id="content">
+            <div>
+                <canvas id="snakeboard" width="600px" height="600px"></canvas>
+                <style>
+                  #snakeboard {
+                    position: absolute;
+                    top: 61%;
+                    left: 45%;
+                    transform: translate(-50%, -50%);
+                    box-shadow: 0 0 0.1vw 0.3vw #fff7f7, 0 0 3vw 0.3vw #7528d6, inset 0 0 1vw 0.3vw #7528d6, inset 0 0 0.3vw 0.1vw #fff7f7;
+                    border-radius: 10px;
+                  }
+                </style>  
+            </div>
+        </div>
+        <div id="right">
+            <div>
+                <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">&emsp;ID PLAYER</th>
+                        <th scope="col">&emsp;SCORE</th>
+                        <th scope="col">&emsp;RESULT</th>
+                      </tr>
+                      <tr>
+                        <th scope="col">&ensp;1. &emsp; Player 1</th>
+                        <td>&emsp;&emsp;&emsp;&emsp;<b id="score1"></b></td>
+                        <td>&emsp;&emsp;&emsp;&emsp;<b id="result1"></b></td>
+                      </tr>
+                      <tr>
+                        <th scope="col">&ensp;2. &emsp; Player 2</th>
+                        <td>&emsp;&emsp;&emsp;&emsp;<b id="score2"></b></td>
+                        <td>&emsp;&emsp;&emsp;&emsp;<b id="result2"></b></td>
+                      </tr>
+                    </thead>
+                </table>
+            </div>
+            <div>
+                <br>
+                <h2>&emsp;&emsp;Time starts in: <b id="ty"></b></h2>
+                <h2>&emsp;&emsp;Time remaining: <b id="ti"></b></h2>
+            </div>
+        </div>
+    </div>
+  </body>
+
+  <script>
+    const board_border = 'black';
+    const board_background = "pink";
+    const snake_col = 'lightblue';
+    const snake_border = 'darkblue';
+    
+    let snake2 = [
+      {x: 400, y: 510},
+      {x: 400, y: 520},
+      {x: 400, y: 530},
+      {x: 400, y: 540},
+      {x: 400, y: 550}
+    ]
+    let snake1 = [
+      {x: 200, y: 100},
+      {x: 200, y: 90},
+      {x: 200, y: 80},
+      {x: 200, y: 70},
+      {x: 200, y: 60}
+    ]
+    let win1 = '----'
+    let win2 = '----'
+    let ti = 120;
+    let ty = 3;
+    let score2 = 0;
+    let score1 = 0;
+    // True if changing direction
+    // Horizontal velocity
+    let food_x;
+    let food_y;
+    let dx2 = 10;
+    // Vertical velocity
+    let dy2 = 0;
+    let dx1 = 10;
+    let dy1 = 0;
+    let dir1 = 2;
+    let dir2 = 2;
+    let pause;
+    let start;
+    var flag = true;
+    let winner1 = 0;
+    let winner2 = 0;
+    // Get the canvas element
+    const snakeboard = document.getElementById("snakeboard");
+    // Return a two dimensional drawing context
+    const snakeboard_ctx = snakeboard.getContext("2d");
+    // Start game
+    main();
+    gen_food();
+    function set(){
+    snake2 = [
+      {x: 400, y: 510},
+      {x: 400, y: 520},
+      {x: 400, y: 530},
+      {x: 400, y: 540},
+      {x: 400, y: 550}
+    ]
+    snake1 = [
+      {x: 200, y: 100},
+      {x: 200, y: 90},
+      {x: 200, y: 80},
+      {x: 200, y: 70},
+      {x: 200, y: 60}
+    ]
+          score2 = 0;
+          score1 = 0;
+          ti = 120;
+          ty = 3;
+          winner1 = 0;
+          winner2 =0;
+          win1 = '----';
+          win2 = '----'}
+   // document.addEventListener("mouseover", change_direction);
+    change_direction();
+    // main function called repeatedly to keep the game running
+    setInterval(Time,1000)
+    function Time(){
+      if(flag == false && pause == 1){
+      if(ty == 0){
+        ty = 0;
+        if (has_game_ended2() || has_game_ended1() || ti == 0){ ti = 0;}
+        else{ti--;}     
+      }
+      else{ty--;}
+      }
+      document.getElementById('ti').innerHTML = ti;
+      document.getElementById('ty').innerHTML = ty;
+    }
+    // result game ended
+    function result(){
+      if(has_game_ended1()){winner1 = 0; winner2 =1; win2 = 'win'; win1 = 'lose';}  
+      else if(has_game_ended2()){winner1 = 1; winner2 =0; win1 = 'win'; win2 = 'lose';}  
+      else {
+        if(score1 > score2) {winner1 = 1; winner2 = 0; win1 = 'win'; win2 = 'lose';}
+        else if(score1 == score2) {winner1 = 1; winner2 = 1; win1 = win2 = 'tie';}
+        else {winner2 =1; winner1 = 0; win1 = 'lose'; win2 = 'win';}
+      } 
+      //document.getElementById('result1').value= win1;
+      //document.getElementById('result2').value= win2; 
+    }
+    document.getElementById('score2').innerHTML = score2;
+    document.getElementById('score1').innerHTML = score1;
+    function main() {
+      update();
+      document.getElementById('result1').innerHTML= win1;
+      document.getElementById('result2').innerHTML= win2;
+      $.post("addDatasnake1.php",$('#form').serialize());
+      $.post("addDatasnake2.php",$('#form').serialize());
+      //document.getElementById('score1').value= score1;
+        if (has_game_ended2() || has_game_ended1() || ti == 0){
+          result();
+          if(start == 1){set();gen_food();$.post("addData.php",$('#form').serialize());}}
+        else if(flag == true){
+          clear_board();
+          drawFood();
+          drawSnake();
+          if(start == 1){flag = false;$.post("addData.php",$('#form').serialize());}}
+        else{
+          if(pause!=0){
+            change_direction();
+            clear_board();
+            drawFood();
+            if(ty == 0){
+            move_snake();}
+            drawSnake();
+        } 
+    }
+    setTimeout(function onTick() {main();},300)
+  }
+    
+    // draw a border around the canvas
+    function clear_board() {
+      //  Select the colour to fill the drawing
+      snakeboard_ctx.fillStyle = board_background;
+      //  Select the colour for the border of the canvas
+      snakeboard_ctx.strokestyle = board_border;
+      // Draw a "filled" rectangle to cover the entire canvas
+      snakeboard_ctx.fillRect(0, 0, snakeboard.width, snakeboard.height);
+      // Draw a "border" around the entire canvas
+      snakeboard_ctx.strokeRect(0, 0, snakeboard.width, snakeboard.height);
+    }
+    
+    // Draw the snake on the canvas
+    function drawSnake() {
+      // Draw each part
+      snake2.forEach(drawSnakePart2)
+      snake1.forEach(drawSnakePart1)
+    }
+
+    function drawFood() {
+      snakeboard_ctx.fillStyle = 'lightgreen';
+      snakeboard_ctx.strokestyle = 'darkgreen';
+      snakeboard_ctx.fillRect(food_x, food_y, 10, 10);
+      snakeboard_ctx.strokeRect(food_x, food_y, 10, 10);
+    }
+    
+    // Draw one snake part
+    function drawSnakePart2(snakePart) {
+
+      // Set the colour of the snake part
+      snakeboard_ctx.fillStyle = "yellow";
+      // Set the border colour of the snake part
+      snakeboard_ctx.strokestyle = snake_border;
+      // Draw a "filled" rectangle to represent the snake part at the coordinates
+      // the part is located
+      snakeboard_ctx.fillRect(snakePart.x, snakePart.y, 10, 10);
+      // Draw a border around the snake part
+      snakeboard_ctx.strokeRect(snakePart.x, snakePart.y, 10, 10);
+    }
+    function drawSnakePart1(snakePart) {
+
+      // Set the colour of the snake part
+      snakeboard_ctx.fillStyle = "blue";
+      // Set the border colour of the snake part
+      snakeboard_ctx.strokestyle = snake_border;
+      // Draw a "filled" rectangle to represent the snake part at the coordinates
+      // the part is located
+      snakeboard_ctx.fillRect(snakePart.x, snakePart.y, 10, 10);
+      // Draw a border around the snake part
+      snakeboard_ctx.strokeRect(snakePart.x, snakePart.y, 10, 10);
+    }
+
+    function has_game_ended2() {
+      for (let i = 4; i < snake2.length; i++) {
+        if (snake2[i].x === snake2[0].x && snake2[i].y === snake2[0].y) return true
+      }
+      for (let j = 1; j < snake1.length; j++) {
+        if (snake1[j].x === snake2[0].x && snake1[j].y === snake2[0].y) return true
+      }
+      const hitLeftWall = snake2[0].x < 0;
+      const hitRightWall = snake2[0].x > snakeboard.width - 10;
+      const hitToptWall = snake2[0].y < 0;
+      const hitBottomWall = snake2[0].y > snakeboard.height - 10;
+      return hitLeftWall || hitRightWall || hitToptWall || hitBottomWall
+    }
+    function has_game_ended1() {
+      for (let i = 4; i < snake1.length; i++) {
+        if (snake1[i].x === snake1[0].x && snake1[i].y === snake1[0].y) return true
+      }
+      for (let j = 1; j < snake2.length; j++) {
+        if (snake2[j].x === snake1[0].x && snake2[j].y === snake1[0].y) return true
+      }
+      const hitLeftWall1 = snake1[0].x < 0;
+      const hitRightWall1 = snake1[0].x > snakeboard.width - 10;
+      const hitToptWall1 = snake1[0].y < 0;
+      const hitBottomWall1 = snake1[0].y > snakeboard.height - 10;
+      return hitLeftWall1 || hitRightWall1 || hitToptWall1 || hitBottomWall1
+    }
+
+    function random_food(min, max) {
+      return Math.round((Math.random() * (max-min) + min) / 10) * 10;
+    }
+
+    function gen_food() {
+      // Generate a random number the food x-coordinate
+      food_x = random_food(0, snakeboard.width - 10);
+      // Generate a random number for the food y-coordinate
+      food_y = random_food(0, snakeboard.height - 10);
+      // if the new food location is where the snake currently is, generate a new food location
+      snake2.forEach(function has_snake_eaten_food2(part) {
+        const has_eaten2 = part.x == food_x && part.y == food_y;
+        if (has_eaten2) gen_food();
+      });
+      snake1.forEach(function has_snake_eaten_food1(part) {
+        const has_eaten1 = part.x == food_x && part.y == food_y;
+        if (has_eaten1) gen_food();
+      });
+    }
+
+    function change_direction() 
+    {
+
+                const goingUp2 = dy2 == -10;
+                const goingDown2 = dy2 == 10;
+                const goingRight2 = dx2 == 10;
+                const goingLeft2 = dx2 == -10;
+                const goingUp1 = dy1 == -10;
+                const goingDown1 = dy1 == 10;
+                const goingRight1 = dx1 == 10;
+                const goingLeft1 = dx1 == -10;
+                if (dir2 == 4 && !goingRight2) //number 4, left 
+                {
+                    dx2 = -10;
+                    dy2 = 0;
+                }
+                if (dir2 == 1 && !goingDown2) //number 1, up
+                {
+                    dx2 = 0;
+                    dy2 = -10;
+                }
+                if (dir2 == 2 && !goingLeft2) //number 2, right
+                {
+                    dx2 = 10;
+                    dy2 = 0;
+                }
+                if (dir2 == 3 && !goingUp2) //number 3, down
+                {
+                    dx2 = 0;
+                    dy2 = 10;
+                }
+                if (dir1 == 4 && !goingRight1) //number 4, left 
+                {
+                    dx1 = -10;
+                    dy1 = 0;
+                }
+                if (dir1 == 1 && !goingDown1) //number 1, up
+                {
+                    dx1 = 0;
+                    dy1 = -10;
+                }
+                if (dir1 == 2 && !goingLeft1) //number 2, right
+                {
+                    dx1 = 10;
+                    dy1 = 0;
+                }
+                if (dir1 == 3 && !goingUp1) //number 3, down
+                {
+                    dx1 = 0;
+                    dy1 = 10;
+                }
+    
+       
+        //const keyPressed = event.keyCode; 
+        
+    }
+
+    function move_snake() {
+      // Create the new Snake's head
+      const head2 = {x: snake2[0].x + dx2, y: snake2[0].y + dy2};
+      const head1 = {x: snake1[0].x + dx1, y: snake1[0].y + dy1};
+      // Add the new head to the beginning of snake body
+      snake2.unshift(head2);
+      snake1.unshift(head1);
+      const has_eaten_food2 = snake2[0].x === food_x && snake2[0].y === food_y;
+      const has_eaten_food1 = snake1[0].x === food_x && snake1[0].y === food_y;
+      if (has_eaten_food2) {
+        // Increase score
+        score2 += 1;
+        // Display score on screen
+        document.getElementById('score2').innerHTML = score2;
+        // Generate new food location
+        gen_food();
+      } else {
+        // Remove the last part of snake body
+        snake2.pop();
+      }
+      if (has_eaten_food1) {
+        // Increase score
+        score1 += 1;
+        // Display score on screen
+        document.getElementById('score1').innerHTML = score1;
+        // Generate new food location
+        gen_food();
+      } else {
+        // Remove the last part of snake body
+        snake1.pop();
+      }
+    }
+    function update(){
+      $.post("getDatasnake1.php",
+            function(data){
+                dir1 = data[0].direction;
+                start = data[0].start;
+                pause = data[0].stop; 
+            })
+      $.post("getDatasnake2.php",
+            function(data){
+                dir2 = data[0].direction;
+            })
+      document.getElementById('score_1').value= score1;
+      document.getElementById('score_2').value= score2;
+      document.getElementById('winner1').value= winner1;
+      document.getElementById('winner2').value= winner2;
+    }
+    
+  </script>
+</html>
